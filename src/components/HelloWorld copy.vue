@@ -1,8 +1,7 @@
 <template>
   <div>
-    <input v-model="username"/>
     <div
-      class="chat-content" @click='hasScrolled'
+      class="chat-content"
       :style="{
         height: '280px',
         padding: '20px',
@@ -13,7 +12,7 @@
       <!-- recordContent 聊天记录数组-->
       <span v-for="(itemc, indexc) in recordContent" :key="indexc">
         <!-- 对方 -->
-        <span class="word" v-if="itemc.username != username&&itemc.status==1" style="position:relative;">
+        <span class="word" v-if="itemc.username != username">
           <span class="img" style="background-color:rgb(99,179,187)">
               {{itemc.username}}
             </span>
@@ -22,21 +21,19 @@
           </span>
         </span>
         <!-- 我的 -->
-        <span class="word-my" v-if='itemc.username == username&&itemc.status==1' style="position:relative;">
+        <span class="word-my" v-else>
           <span class="info">
             <span class="info-content">{{ itemc.content }}</span>
           </span>
-          <span class="img" style="background-color:rgb(229,204,111);">
-            我
-          </span>
+          <span class="img" style="background-color:rgb(229,204,111)">
+              我
+            </span>
         </span>
       </span>
 
-      <!-- <span v-if="newContent.length > 0">
-        <span v-for="item in newContent" :key="item.id"> -->
-      <span v-if="recordContent.length > 0">
-        <span v-for="item in recordContent" :key="item.id">
-          <span class="word" v-if="username != item.username&&item.status==0">
+      <span v-if="newContent.length > 0">
+        <span v-for="item in newContent" :key="item.id">
+          <span class="word" v-if="username != item.username">
           <span class="img" style="background-color:rgb(99,179,187)">
               {{item.username}}
             </span>
@@ -45,14 +42,13 @@
             </span>
           </span>
           <!-- 我的 -->
-          <span class="word-my" v-if='username == item.username&&item.status==0'>
+          <span class="word-my" v-else>
             <span class="info">
               <span class="info-content">{{ item.content }}</span>
             </span>
-            <span class="img" style="background-color:rgb(229,204,111)">
+          <span class="img" style="background-color:rgb(229,204,111)">
               我
             </span>
-            
           </span>
         </span>
       </span>
@@ -72,10 +68,8 @@ export default {
   },
   data() {
     return {
-      i:4,
-      username: "qq12",//当前用户
-      // meetNum:'66666',//当前会议号
-      meetNum:'3655741f843073b650efd70836feee868fa7d2316fb4070b7147c3150b3e79a1',//当前会议号
+      username: "陈文艺",//当前用户
+      meetNum:'20210955',//当前会议号
       oldScrollTop: 0,
       wenetWs: null, //RTC
       sendWs: null, //发送数据
@@ -87,44 +81,46 @@ export default {
       //var this.WebSocket_url = 'ws://192.168.0.50:8001/recognize';
       api_key: "ZemZs39d",
       api_secret: "4tdbgu6qZQGAQijmjRvbZKnhryqeoQvg",
-      // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
-      // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
-      // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
-
-      WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
-      sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
-
+      WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
+      sendSocket_url: "ws://218.17.161.34:8484/",//获取语音转写记录
       newContent: [],
       recordContent: [
-        {
-          mineMsg: "123",
-          username: "忽忽",
-          content: "yiyyy",
-        },
-        {
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        },
-        {
-          mineMsg: false,
-          username: "YY",
-          content: "WWEWEWEW",
-        },
-        {
-          mineMsg: false,
-          username: "YY",
-          content: "WWEWEWEW",
-        },{
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        },{
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        }
+        // {
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "yiyyy",
+        // },
+        // {
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },
+        // {
+        //   mineMsg: false,
+        //   headUrl:
+        //     "https://www.xtra.com.my/wp-content/uploads/2019/07/Four-Ears-Cat_Featured-Image.jpg",
+        //   username: "YY",
+        //   content: "WWEWEWEW",
+        // },
+        // {
+        //   mineMsg: false,
+        //   headUrl:
+        //     "https://www.xtra.com.my/wp-content/uploads/2019/07/Four-Ears-Cat_Featured-Image.jpg",
+        //   username: "YY",
+        //   content: "WWEWEWEW",
+        // },{
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },{
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },
       ],
     };
   },
@@ -132,23 +128,8 @@ export default {
     this.getKey();
     this.startRecording();//开始实时传输音频
     this.to_footer();
-    this.openSendSocket()
-  },
-  destroyed(){
-    this.sendWs.onclose=function(){
-      
-    }
   },
   methods: {
-    //判断是否有滚动条：vertical纵轴，horizontal横轴
-    hasScrolled:function(element,direction){
-        if(direction==='vertical'){
-          alert(element.scrollHeight,element.clientHeight)
-            return element.scrollHeight>element.clientHeight;
-        }else if(direction==='horizontal'){
-            return element.scrollWidth>element.clientWidth;
-        }
-    },
     getKey: function () {//获取转写KEY
       this.axios
         .post("https://ting.raisound.com:8443/v3/auth/login", {
@@ -182,8 +163,7 @@ export default {
         );
       };
       that.sendWs.onmessage = (res) => {
-        if (JSON.parse(res.data).code == 200) {
-          that.update()
+        if (res.code == 200) {
         }
       };
     },
@@ -193,7 +173,7 @@ export default {
       this.result = "";
       if ("WebSocket" in window) {
         this.wenetWs = new WebSocket(url); //初步转写
-        // this.openSendSocket();
+        this.openSendSocket();
         this.wenetWs.onopen = function () {
           console.log("Websocket 连接成功，开始识别");
           that.wenetWs.send(
@@ -226,14 +206,13 @@ export default {
         };
       }
     },
-    transform:function(results,flag){//格式处理
+     transform:function(results,flag){//格式处理
             let newobj = {};
             let temp = {};
-            newobj.action = 'results'; //语音记录临时结果标识
+            newobj.action = flag; //语音记录临时结果标识
             temp.content = results; //转写结果
             temp.meeting_number = this.meetNum//传入会议号
             temp.username = this.username //传入当前登录人
-            temp.type = flag //传入当前登录人
             newobj.params = temp
             return newobj
     },
@@ -244,18 +223,10 @@ export default {
         obj.results = obj.results == undefined ? "" : obj.results;
         if (obj.results != "" && obj.results != undefined) {
           if (this.sendWs.readyState == 1&&obj.is_final != 1) {//临时结果
-              this.i--;
-              if(this.i==0){
-                this.i=4
-                var data = that.transform(obj.results,0)
-                this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
-                this.update(); //更新语音记录数据
-              }
-              // setTimeout(()=>{
-              //   var data = that.transform(obj.results,0)
-              //   this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
-              //   this.update(); //更新语音记录数据
-              // },30000)
+            var data = that.transform(obj.results,"provisional")
+
+            this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
+            this.update(); //更新语音记录数据
           } else if (this.sendWs.readyState == 3) {
             // this.openSendSocket()
           }
@@ -263,7 +234,7 @@ export default {
             obj.result = "";
             obj.result += obj.results;
 
-            var data = that.transform(obj.result,1)
+            var data = that.transform(obj.result,"customMessage")
             if (this.sendWs.readyState == 1) {
               this.sendWs.send(JSON.stringify(data)); //发送转写结果
               this.update(); //更新语音记录数据
@@ -283,14 +254,11 @@ export default {
       let that = this;
       this.sendWs.onmessage = function (_msg) {
         //接收语音记录
-        if (JSON.parse(_msg.data).identification == "results") {
+        if (JSON.parse(_msg.data).identification == "final_result") {
           that.recordContent = JSON.parse(_msg.data).data; //记录数据更新
-        } 
-        // if (JSON.parse(_msg.data).identification == "final_result") {
-        //   that.recordContent = JSON.parse(_msg.data).data; //记录数据更新
-        // } else if (JSON.parse(_msg.data).identification == "provisional") {
-        //   that.newContent = JSON.parse(_msg.data).data;
-        // }
+        } else if (JSON.parse(_msg.data).identification == "provisional") {
+          that.newContent = JSON.parse(_msg.data).data;
+        }
       };
       that.to_footer()
     },

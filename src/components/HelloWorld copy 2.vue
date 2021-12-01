@@ -2,7 +2,7 @@
   <div>
     <input v-model="username"/>
     <div
-      class="chat-content" @click='hasScrolled'
+      class="chat-content"
       :style="{
         height: '280px',
         padding: '20px',
@@ -72,10 +72,8 @@ export default {
   },
   data() {
     return {
-      i:4,
-      username: "qq12",//当前用户
-      // meetNum:'66666',//当前会议号
-      meetNum:'3655741f843073b650efd70836feee868fa7d2316fb4070b7147c3150b3e79a1',//当前会议号
+      username: "qq1",//当前用户
+      meetNum:'20190202',//当前会议号
       oldScrollTop: 0,
       wenetWs: null, //RTC
       sendWs: null, //发送数据
@@ -87,44 +85,48 @@ export default {
       //var this.WebSocket_url = 'ws://192.168.0.50:8001/recognize';
       api_key: "ZemZs39d",
       api_secret: "4tdbgu6qZQGAQijmjRvbZKnhryqeoQvg",
-      // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
+      WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
-
-      WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
-      sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
-
+      sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
       newContent: [],
       recordContent: [
-        {
-          mineMsg: "123",
-          username: "忽忽",
-          content: "yiyyy",
-        },
-        {
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        },
-        {
-          mineMsg: false,
-          username: "YY",
-          content: "WWEWEWEW",
-        },
-        {
-          mineMsg: false,
-          username: "YY",
-          content: "WWEWEWEW",
-        },{
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        },{
-          mineMsg: "123",
-          username: "忽忽",
-          content: "WWEWEWEW",
-        }
+        // {
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "yiyyy",
+        // },
+        // {
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },
+        // {
+        //   mineMsg: false,
+        //   headUrl:
+        //     "https://www.xtra.com.my/wp-content/uploads/2019/07/Four-Ears-Cat_Featured-Image.jpg",
+        //   username: "YY",
+        //   content: "WWEWEWEW",
+        // },
+        // {
+        //   mineMsg: false,
+        //   headUrl:
+        //     "https://www.xtra.com.my/wp-content/uploads/2019/07/Four-Ears-Cat_Featured-Image.jpg",
+        //   username: "YY",
+        //   content: "WWEWEWEW",
+        // },{
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },{
+        //   mineMsg: "123",
+        //   headUrl: "http://4eyes.cn/UploadedFile/525859866428224.jpg",
+        //   username: "忽忽",
+        //   content: "WWEWEWEW",
+        // },
       ],
     };
   },
@@ -140,15 +142,6 @@ export default {
     }
   },
   methods: {
-    //判断是否有滚动条：vertical纵轴，horizontal横轴
-    hasScrolled:function(element,direction){
-        if(direction==='vertical'){
-          alert(element.scrollHeight,element.clientHeight)
-            return element.scrollHeight>element.clientHeight;
-        }else if(direction==='horizontal'){
-            return element.scrollWidth>element.clientWidth;
-        }
-    },
     getKey: function () {//获取转写KEY
       this.axios
         .post("https://ting.raisound.com:8443/v3/auth/login", {
@@ -243,19 +236,11 @@ export default {
       if (obj.code == 200) {
         obj.results = obj.results == undefined ? "" : obj.results;
         if (obj.results != "" && obj.results != undefined) {
+
           if (this.sendWs.readyState == 1&&obj.is_final != 1) {//临时结果
-              this.i--;
-              if(this.i==0){
-                this.i=4
-                var data = that.transform(obj.results,0)
-                this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
-                this.update(); //更新语音记录数据
-              }
-              // setTimeout(()=>{
-              //   var data = that.transform(obj.results,0)
-              //   this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
-              //   this.update(); //更新语音记录数据
-              // },30000)
+            var data = that.transform(obj.results,0)
+            this.sendWs.send(JSON.stringify(data)); //发送临时转写结果
+            this.update(); //更新语音记录数据
           } else if (this.sendWs.readyState == 3) {
             // this.openSendSocket()
           }
