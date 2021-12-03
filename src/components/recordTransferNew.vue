@@ -2,6 +2,26 @@
   <div class="chat-main" @scroll="scrollEvent" >
         <button size="mini" type="primary" @click="getMeetNum()">开始转写</button>
     <div class="chat-content"  style="height:220px">
+      <!-- 
+      <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
+        <span v-if="itemc.username != username" class="word" style="position:relative;">
+          <span class="img" style="background-color:rgb(99,179,187)">
+            {{ itemc.username }}
+          </span>
+          <span class="info">
+            <span class="info-content">{{ itemc.content }}</span>
+          </span>
+        </span>
+        <span v-else class="word-my" style="position:relative;">
+          <span class="info">
+            <span class="info-content">{{ itemc.content }}</span>
+          </span>
+          <span class="img" style="background-color:rgb(229,204,111);">
+            我
+          </span>
+        </span>
+      </span>
+       -->
       <div v-if="recordContent && recordContent.length > 0" class="btn">
         <!-- <el-button size="mini" type="primary" @click="getMeetNum()">开始转写</el-button> -->
       </div>
@@ -73,7 +93,8 @@ export default {
   // },
   data() {
     return {
-      meetNum: '222', // 当前会议号
+      i:4,
+      meetNum: '22211', // 当前会议号
       oldScrollTop: 0,
       wenetWs: null, // RTC
       sendWs: null, // 发送数据
@@ -146,7 +167,7 @@ export default {
       // })
       // that.meetNum = this.chatData.meeting_id
       this.axios
-        .post("https://ting.raisound.com:8443/v3/auth/createMeeting", {
+        .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
         meeting_name: 'testmeeting',
         meeting_number: this.chatData.meeting_id
       }).then(res => {
@@ -192,6 +213,7 @@ export default {
     openSendSocket: function() { // 语音记录socke
       var that = this
       that.username='23'
+      that.serverTimeoutObj && clearTimeout(that.serverTimeoutObj);
       this.sendWs = new WebSocket(this.sendSocket_url) // 语音记录
       this.sendWs.onopen = function() {
         console.log('Websocket 连接成功，开始发送')
@@ -199,6 +221,7 @@ export default {
           JSON.stringify({
             action: 'login',
             params: {
+              is:1,
               username: that.username,
               meeting_number: that.meetNum
             }
@@ -216,37 +239,44 @@ export default {
           this.sendFlag = false
         }
       }
+      that.sendWs.onclose =(e)=>{
+        console.log('--------------------------------------------------------meeting-WS------关闭-------------------------------------------------------------------------')
+        console.log('+++++++++++++++++++++++++++++++--------------------------------------******************websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+        console.log('+++++++++++++++++++++++++++++++--------------------------------------******************',e,'+++++++++++++++++++++++++++++++--------------------------------------******************')
+        if(!that.reFlag){
+          // that.reconnect()
+        }
+      }
+      that.wenetWs.onerror=(err)=>{
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@错误原因！！！！！！！！',err,'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        if(!that.reFlag){
+          // that.reconnect()
+        }
+      }
     },
     heartbeatFun(){//心跳
-      let obj =JSON.stringify({
-          "action": "heartbeat",
-          "params": {
-              "username": this.username,
-            },
-        })
-        this.sendWs.send(obj)
-        var self = this;
-            self.timeoutObj && clearTimeout(self.timeoutObj);
-            self.serverTimeoutObj && clearTimeout(self.serverTimeoutObj);
-            self.timeoutObj = setTimeout(function(){
+        var that = this;
+            that.timeoutObj && clearTimeout(that.timeoutObj);
+            that.serverTimeoutObj && clearTimeout(that.serverTimeoutObj);
+            that.timeoutObj = setTimeout(function(){
                 //这里发送一个心跳，后端收到后，返回一个心跳消息，
-                if (self.sendWs.readyState == 1) {//如果连接正常
+                if (that.sendWs.readyState == 1) {//如果连接正常
                     var data = JSON.stringify({
                       "action": "heartbeat",
                       "params": {
-                          "username": this.username,
+                          "username": that.username,
                         },
                     })
-                    self.sendWs.send(data);
+                    that.sendWs.send(data);
                 }else{//否则重连
-                    self.openSendSocket();
+                    that.openSendSocket();
                 }
-                self.serverTimeoutObj = setTimeout(function() {
+                // that.serverTimeoutObj = setTimeout(function() {
                     //超时关闭
-                    self.sendWs.close();
-                }, self.timeout);
+                    // that.sendWs.close();
+                // }, that.timeout);
 
-            }, self.timeout)
+            }, that.timeout)
     },
 
     scrollEvent(e){// 滚动条到顶事件
@@ -256,15 +286,16 @@ export default {
           if(that.pageData.current_page<that.pageData.total){
             that.pageData.current_page++;
             if(that.sendWs.readyState==1){
-                that.sendWs.send(JSON.stringify({
-                  action: 'pagingResult',
-                  params: {
-                    meeting_number:that.meetNum,
-                    page: that.pageData.current_page,
-                    limit: that.rows,
-                    order:1
-                  }
-                }))
+                // that.sendWs.send(JSON.stringify({
+                //   action: 'pagingResult',
+                //   params: {
+                //     username:that.username,
+                //     meeting_number:that.meetNum,
+                //     page: that.pageData.current_page,
+                //     limit: that.rows,
+                //     order:1
+                //   }
+                // }))
             }
           }
         }
@@ -330,9 +361,9 @@ export default {
       temp.meeting_number = this.meetNum// 传入会议号
       temp.username = this.username // 传入当前登录人
       temp.type = flag // 传入当前登录人
-      temp.limit = this.rows //请求条数
-      temp.order = 1;
-      temp.page = 1
+      // temp.limit = this.rows //请求条数
+      // temp.order = 1;
+      // temp.page = 1
       newobj.params = temp
       return newobj
     },
@@ -346,13 +377,14 @@ export default {
             this.i--
             if (this.i == 0) {
               this.i = 4
+            // that.serverTimeoutObj=setTimeout(()=>{
               const data = that.transform(obj.results, 0)
+              console.log('*-*-*-*-*-*-*-*-*-*-*-*-*-99999999*-*-*-*-*-*-*-*-*-*-')
               this.sendWs.send(JSON.stringify(data)) // 发送临时转写结果
-              this.update() // 更新语音记录数据
+            // },500)
             }
-            const data = that.transform(obj.results, 0)
-            this.sendWs.send(JSON.stringify(data)) // 发送临时转写结果
             this.update() // 更新语音记录数据
+
           } else if (this.sendWs.readyState == 3) {
             // this.openSendSocket()
           }
@@ -365,8 +397,8 @@ export default {
               this.sendWs.send(JSON.stringify(data)) // 发送转写结果
               this.update() // 更新语音记录数据
             } else if (this.sendWs.readyState == 3) {
-              alert('连接异常')
-              that.reconnect()
+              // alert('连接异常')
+              // that.reconnect()
             }
             this.to_footer()
           } else {
@@ -380,19 +412,29 @@ export default {
     update: function() {
       const that = this
       this.sendWs.onmessage = function(_msg) {
-        // 接收语音记录
-        if (JSON.parse(_msg.data).identification == 'historicalData'||JSON.parse(_msg.data).identification == 'results') {
-          if(JSON.parse(_msg.data).data.data){
-            that.recordContent = JSON.parse(_msg.data).data.data.reverse() // 记录数据更新
+        that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
+        console.log(that.recordContent)
+        /**
+         * 
+         * that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
             that.pageData = JSON.parse(_msg.data).data.page
-          }
-        }else if(JSON.parse(_msg.data).identification == 'pagingResult'){
-          let arr =JSON.parse(_msg.data).data.data.reverse()
-          arr.push(...that.recordContent)
-          that.recordContent=arr
-          that.pageData = JSON.parse(_msg.data).data.page
+         */
+        that.recordContent = JSON.parse(_msg.data).data
 
-        }
+        // 接收语音记录
+        // if (JSON.parse(_msg.data).identification == 'historicalData'||JSON.parse(_msg.data).identification == 'results') {
+        //   if(JSON.parse(_msg.data).data.data){
+
+        //     that.recordContent = JSON.parse(_msg.data).data.data.reverse() // 记录数据更新
+        //     that.pageData = JSON.parse(_msg.data).data.page
+        //   }
+        // }else if(JSON.parse(_msg.data).identification == 'pagingResult'){
+        //   let arr =JSON.parse(_msg.data).data.data.reverse()
+        //   arr.push(...that.recordContent)
+        //   that.recordContent=arr
+        //   that.pageData = JSON.parse(_msg.data).data.page
+
+        // }
       }
       that.to_footer()
     },
