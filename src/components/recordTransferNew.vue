@@ -94,7 +94,7 @@ export default {
   data() {
     return {
       i:4,
-      meetNum: '22211', // 当前会议号
+      meetNum: '95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368', // 当前会议号
       oldScrollTop: 0,
       wenetWs: null, // RTC
       sendWs: null, // 发送数据
@@ -130,7 +130,7 @@ export default {
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
       // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
       sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
-      chatData:{meeting_id:'22211'}
+      chatData:{meeting_id:'95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368'}
     }
   },
   mounted() {
