@@ -1,7 +1,7 @@
 <template>
-  <div class="chat-main" @scroll="scrollEvent" >
+  <div class="chat-main" style="height:280px;padding-top:2px">
         <button size="mini" type="primary" @click="getMeetNum()">开始转写</button>
-    <div class="chat-content"  style="height:220px">
+    <div class="chat-content"  @scroll="scrollEvent" style="display:block;height:220px;padding-top:2px">
       <!-- 
       <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
         <span v-if="itemc.username != username" class="word" style="position:relative;">
@@ -22,9 +22,6 @@
         </span>
       </span>
        -->
-      <div v-if="recordContent && recordContent.length > 0" class="btn">
-        <!-- <el-button size="mini" type="primary" @click="getMeetNum()">开始转写</el-button> -->
-      </div>
       <!-- recordContent 聊天记录数组-->
       <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
         <!-- 对方 -->
@@ -47,7 +44,7 @@
         </span>
       </span>
 
-      <span v-if="newContent.length > 0">
+      <!-- <span v-if="newContent.length > 0">
         <span v-for="item in newContent" :key="item.id">
           <span v-if="username != item.username" class="word">
             <span class="img" style="background-color:rgb(99,179,187)">
@@ -57,7 +54,6 @@
               <span class="info-content">{{ item.content }}</span>
             </span>
           </span>
-          <!-- 我的 -->
           <span v-else class="word-my">
             <span class="info">
               <span class="info-content">{{ item.content }}</span>
@@ -68,8 +64,33 @@
 
           </span>
         </span>
-      </span>
+      </span> -->
+    
     </div>
+    <br style="clear:both;"/>
+    <div style="background-color:#fff;margin-top:60px">
+          <span class="word_temp">
+            <span class="img" style="background-color:rgb(99,179,187);height:30px;width:30px" v-text="othercpntent.username=(othercpntent&&othercpntent!=null)?othercpntent.username:'其他'">
+              {{ othercpntent.username }}
+            </span>
+            <!-- <span class="info"> -->
+              <span class="info-content" v-text="othercpntent.content=(othercpntent&&othercpntent!=null)?othercpntent.content:'其他'">{{ othercpntent.content }}</span>
+            <!-- </span> -->
+          </span>
+          <span class="word_temp">
+            <span class="img" style="background-color:rgb(229,204,111);height:30px;width:30px">
+              我
+            </span>
+            <!-- <span class="info"> -->
+              <span class="info-content">{{ mycontent.content }}</span>
+            <!-- </span> -->
+          </span>
+    </div>
+    <!-- 临时结果 -->
+    <!-- <span style="display:block">
+        
+        </span>
+      </span> -->
     <!-- <div id="box" class="box" v-if="">
         <div class="box-in"></div>
     </div>     -->
@@ -93,8 +114,9 @@ export default {
   // },
   data() {
     return {
-      i:4,
-      meetNum: '95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368', // 当前会议号
+      i:5,
+      meetNum: '22211', // 当前会议号
+      username:'23',
       oldScrollTop: 0,
       wenetWs: null, // RTC
       sendWs: null, // 发送数据
@@ -105,7 +127,13 @@ export default {
       token_val: '',
       api_key: 'ZemZs39d',
       api_secret: '4tdbgu6qZQGAQijmjRvbZKnhryqeoQvg',
-      newContent: [],
+      newContent: [{
+        username:'23',
+        content:'11111'
+      },{
+        username:'213',
+        content:'11111'
+      }],
       recordContent: [],
       pageData:{
         current_page: 4,//当前
@@ -120,6 +148,8 @@ export default {
       serverTimeoutObj: null,//心跳倒计时
       lockReconnect:false,
       timeoutnum: null,//断开 重连倒计时
+      mycontent:{},
+      othercpntent:{},
 
 
 
@@ -128,13 +158,14 @@ export default {
       WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
-      sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
-      chatData:{meeting_id:'95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368'}
+      sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
+      // sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
+      chatData:{meeting_id:'22211'}
     }
   },
   mounted() {
     this.to_footer()
+    
     // addEventListener('scroll',this.scrollEvent)
   },
   beforeDestroy() {
@@ -155,45 +186,25 @@ export default {
       //   return
       // }
       const that = this
-      // createMeeting_api({
-      //   meeting_name: 'testmeeting',
-      //   meeting_number: this.chatData.meeting_id
-      // }).then(res => {
-      //   that.meetNum = res.meeting_number
-      //   that.startRecording()// 开始实时传输音频
-      //   that.openSendSocket()
-      // }).catch((err) => {
-      //   console.log(err)
-      // })
-      // that.meetNum = this.chatData.meeting_id
       this.axios
         .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
         meeting_name: 'testmeeting',
         meeting_number: this.chatData.meeting_id
       }).then(res => {
         that.meetNum = res.meeting_number
-        // that.startRecording()// 开始实时传输音频
-        // that.openSendSocket()
       }).catch((err) => {
         console.log(err)
       })
 
       that.startRecording()// 开始实时传输音频
       that.openSendSocket()
+      that.to_footer()
+
       if(this.sendWs&&this.sendWs.readyState==1){
         this.heartbeat=setInterval(this.heartbeatFun(),300)
       }
     },
-    getKey: function() { // 获取转写KEY
-      // getKey_api({
-      //   api_key: 'zU71GELn',
-      //   api_secret: 'eWrf3rvZhoF9YTFOLfAuzjXkGb3oqdom'
-      // }).then(res => {
-      //   this.token_val = res.data.token
-      // }).catch((err) => {
-      //   console.log(err)
-      // })
-
+    getKey: function() { 
       this.axios
         .post("https://ting.raisound.com:8443/v3/auth/login", {
           api_key: "zU71GELn",
@@ -212,7 +223,7 @@ export default {
     },
     openSendSocket: function() { // 语音记录socke
       var that = this
-      that.username='23'
+      // that.username='213'
       that.serverTimeoutObj && clearTimeout(that.serverTimeoutObj);
       this.sendWs = new WebSocket(this.sendSocket_url) // 语音记录
       this.sendWs.onopen = function() {
@@ -269,7 +280,7 @@ export default {
                     })
                     that.sendWs.send(data);
                 }else{//否则重连
-                    that.openSendSocket();
+                    that.reconnect();
                 }
                 // that.serverTimeoutObj = setTimeout(function() {
                     //超时关闭
@@ -305,7 +316,6 @@ export default {
       this.result = ''
       if ('WebSocket' in window) {
         this.wenetWs = new WebSocket(url) // 初步转写
-        // this.openSendSocket();
         this.wenetWs.onopen = function() {
           console.log('Websocket 连接成功，开始识别')
           that.wenetWs.send(
@@ -348,7 +358,7 @@ export default {
         that.timeoutnum && clearTimeout(that.timeoutnum);
         that.timeoutnum = setTimeout(function () {
             //新连接
-            alert('正在重连')
+            // alert('正在重连')
             that.openSendSocket();
             that.lockReconnect = false;
         },500);
@@ -376,7 +386,7 @@ export default {
           if (this.sendWs.readyState == 1 && obj.is_final != 1&&this.sendFlag) { // 临时结果
             this.i--
             if (this.i == 0) {
-              this.i = 4
+              this.i = 5
             // that.serverTimeoutObj=setTimeout(()=>{
               const data = that.transform(obj.results, 0)
               console.log('*-*-*-*-*-*-*-*-*-*-*-*-*-99999999*-*-*-*-*-*-*-*-*-*-')
@@ -412,15 +422,24 @@ export default {
     update: function() {
       const that = this
       this.sendWs.onmessage = function(_msg) {
-        that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
+        // that.recordContent=JSON.parse(_msg.data).data // 记录数据更新
         console.log(that.recordContent)
         /**
          * 
          * that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
             that.pageData = JSON.parse(_msg.data).data.page
          */
-        that.recordContent = JSON.parse(_msg.data).data
-
+        if (JSON.parse(_msg.data).identification == 'results'){
+          that.recordContent = JSON.parse(_msg.data).data
+          // that.recordContent.push(JSON.parse(_msg.data).data)
+        }
+        if (JSON.parse(_msg.data).identification == 'temporary'){
+          if(that.username==JSON.parse(_msg.data).data.username){
+            that.mycontent = JSON.parse(_msg.data).data
+          }else{
+            that.othercpntent= JSON.parse(_msg.data).data
+          }
+        }
         // 接收语音记录
         // if (JSON.parse(_msg.data).identification == 'historicalData'||JSON.parse(_msg.data).identification == 'results') {
         //   if(JSON.parse(_msg.data).data.data){
@@ -514,11 +533,11 @@ export default {
 .chat-main{
   width: 100%;
   height: 100%;
-  overflow-y: auto;
 }
 .chat-content {
   height: 100%;
   padding-top: 20px;
+  overflow-y: auto;
 }
 
 .btn{
@@ -576,7 +595,24 @@ export default {
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
 }
-
+.word_temp{
+  display: flex;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 10px;
+  float: left;
+}
+.word_temp .info-content {
+  padding: 6px;
+  font-size: 14px;
+  display: block;
+  float: left;
+  line-height: 15px;
+  width: 90%;
+  background: #a3c3f6;
+  position: relative;
+  /* margin-top: 5px; */
+}
 .word-my {
   display: flex;
   width: 100%;

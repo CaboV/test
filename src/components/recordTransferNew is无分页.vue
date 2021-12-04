@@ -1,8 +1,32 @@
 <template>
-  <div class="chat-main" :style="{height:'calc(100%-100px)'}">
-    <div class="chat-content">
+  <div class="chat-main" @scroll="scrollEvent" >
+        <button size="mini" type="primary" @click="getMeetNum()">开始转写</button>
+    <div class="chat-content"  style="height:220px">
+      <!-- 
+      <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
+        <span v-if="itemc.username != username" class="word" style="position:relative;">
+          <span class="img" style="background-color:rgb(99,179,187)">
+            {{ itemc.username }}
+          </span>
+          <span class="info">
+            <span class="info-content">{{ itemc.content }}</span>
+          </span>
+        </span>
+        <span v-else class="word-my" style="position:relative;">
+          <span class="info">
+            <span class="info-content">{{ itemc.content }}</span>
+          </span>
+          <span class="img" style="background-color:rgb(229,204,111);">
+            我
+          </span>
+        </span>
+      </span>
+       -->
+      <div v-if="recordContent && recordContent.length > 0" class="btn">
+        <!-- <el-button size="mini" type="primary" @click="getMeetNum()">开始转写</el-button> -->
+      </div>
       <!-- recordContent 聊天记录数组-->
-      <span v-for="(itemc, indexc) in recordContent" :key="indexc">
+      <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
         <!-- 对方 -->
         <span v-if="itemc.username != username" class="word" style="position:relative;">
           <span class="img" style="background-color:rgb(99,179,187)">
@@ -46,7 +70,11 @@
         </span>
       </span>
     </div>
+    <!-- <div id="box" class="box" v-if="">
+        <div class="box-in"></div>
+    </div>     -->
   </div>
+  
 </template>
 <script>
 // eslint-disable-next-line no-unused-vars
@@ -65,8 +93,8 @@ export default {
   // },
   data() {
     return {
-      chatHight:10,
-      meetNum: '999999', // 当前会议号
+      i:6,
+      meetNum: '95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368', // 当前会议号
       oldScrollTop: 0,
       wenetWs: null, // RTC
       sendWs: null, // 发送数据
@@ -79,48 +107,57 @@ export default {
       api_secret: '4tdbgu6qZQGAQijmjRvbZKnhryqeoQvg',
       newContent: [],
       recordContent: [],
-      WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
+      pageData:{
+        current_page: 4,//当前
+        next_page: 4,//下一页
+        previous_page: 3,//上一页
+        total: 4,//总条数
+      },
+      rows:20,
+      sendFlag:false,
+      oldScrollTop:0,
+      timeout: 28*1000,//30秒一次心跳
+      serverTimeoutObj: null,//心跳倒计时
+      lockReconnect:false,
+      timeoutnum: null,//断开 重连倒计时
+
+
+
+
+      // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
+      WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
-      username:'222'
+      // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
+      sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
+      chatData:{meeting_id:'95c6691fdffd9d7567b62a3431df1f20b29a4aa3e7e82b5dd18237f40b846368'}
     }
   },
-  // computed: {
-  //   WebSocket_url() {
-  //     return process.env.VUE_APP_BASE_SOCKET + '/recognize_wss'
-  //   },
-  //   sendSocket_url() {
-  //     return process.env.VUE_APP_BASE_SOCKET + '/meeting_wss'
-  //   },
-  //   username() {
-  //     return this.$store.getters.userInfo.user_name
-  //   }
-  // },
   mounted() {
-    this.getMeetNum()
-    this.getKey()
-    window.onresize=function(){
     this.to_footer()
-      
-    }
-    console.log(this.Height);
+    // addEventListener('scroll',this.scrollEvent)
   },
   beforeDestroy() {
-    this.wenetWs.close()
-    this.sendWs.close()
+  },
+  destroyed(){
+    if(this.sendWs){
+      this.sendWs.onclose=function(){}
+    }
   },
   methods: {
     getMeetNum() {
-      const that = this
-      
-      // var rand = ''
-      // for (var i = 0; i < 8; i++) {
-      //   rand += Math.floor(Math.random() * 10)
+      var rand = ''
+      for (var i = 0; i < 8; i++) {
+        rand += Math.floor(Math.random() * 10)
+      }
+      // if (!this.chatData.meeting_id || this.chatData.meeting_id == '') {
+      //   this.$message.warning('开始失败,请重新开始转写')
+      //   return
       // }
+      const that = this
       // createMeeting_api({
       //   meeting_name: 'testmeeting',
-      //   meeting_number: Number(rand)
+      //   meeting_number: this.chatData.meeting_id
       // }).then(res => {
       //   that.meetNum = res.meeting_number
       //   that.startRecording()// 开始实时传输音频
@@ -128,8 +165,24 @@ export default {
       // }).catch((err) => {
       //   console.log(err)
       // })
+      // that.meetNum = this.chatData.meeting_id
+      this.axios
+        .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
+        meeting_name: 'testmeeting',
+        meeting_number: this.chatData.meeting_id
+      }).then(res => {
+        that.meetNum = res.meeting_number
+        // that.startRecording()// 开始实时传输音频
+        // that.openSendSocket()
+      }).catch((err) => {
+        console.log(err)
+      })
+
       that.startRecording()// 开始实时传输音频
       that.openSendSocket()
+      if(this.sendWs&&this.sendWs.readyState==1){
+        this.heartbeat=setInterval(this.heartbeatFun(),300)
+      }
     },
     getKey: function() { // 获取转写KEY
       // getKey_api({
@@ -159,32 +212,99 @@ export default {
     },
     openSendSocket: function() { // 语音记录socke
       var that = this
-      this.sendWs = new WebSocket(that.sendSocket_url) // 语音记录
+      that.username='213'
+      that.serverTimeoutObj && clearTimeout(that.serverTimeoutObj);
+      this.sendWs = new WebSocket(this.sendSocket_url) // 语音记录
       this.sendWs.onopen = function() {
         console.log('Websocket 连接成功，开始发送')
         that.sendWs.send(
           JSON.stringify({
             action: 'login',
             params: {
+              is:1,
               username: that.username,
               meeting_number: that.meetNum
             }
           })
         )
+        that.heartbeatFun()
       }
+      
       that.sendWs.onmessage = (res) => {
         if (JSON.parse(res.data).code == 200) {
+          this.sendFlag = true
           that.update()
+        }
+        if(JSON.parse(res.data).code==-1){
+          this.sendFlag = false
+        }
+      }
+      that.sendWs.onclose =(e)=>{
+        console.log('--------------------------------------------------------meeting-WS------关闭-------------------------------------------------------------------------')
+        console.log('+++++++++++++++++++++++++++++++--------------------------------------******************websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+        console.log('+++++++++++++++++++++++++++++++--------------------------------------******************',e,'+++++++++++++++++++++++++++++++--------------------------------------******************')
+        if(!that.reFlag){
+          // that.reconnect()
+        }
+      }
+      that.wenetWs.onerror=(err)=>{
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@错误原因！！！！！！！！',err,'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        if(!that.reFlag){
+          // that.reconnect()
         }
       }
     },
+    heartbeatFun(){//心跳
+        var that = this;
+            that.timeoutObj && clearTimeout(that.timeoutObj);
+            that.serverTimeoutObj && clearTimeout(that.serverTimeoutObj);
+            that.timeoutObj = setTimeout(function(){
+                //这里发送一个心跳，后端收到后，返回一个心跳消息，
+                if (that.sendWs.readyState == 1) {//如果连接正常
+                    var data = JSON.stringify({
+                      "action": "heartbeat",
+                      "params": {
+                          "username": that.username,
+                        },
+                    })
+                    that.sendWs.send(data);
+                }else{//否则重连
+                    that.reconnect();
+                }
+                // that.serverTimeoutObj = setTimeout(function() {
+                    //超时关闭
+                    // that.sendWs.close();
+                // }, that.timeout);
 
-    openWebSocket: function() { // 转写socke
+            }, that.timeout)
+    },
+
+    scrollEvent(e){// 滚动条到顶事件
+      let that =this
+        if (e.srcElement.scrollTop  == 0 ) {
+          console.log(that.pageData.current_page<that.pageData.total,that.pageData.current_page,that.pageData.total)
+          if(that.pageData.current_page<that.pageData.total){
+            that.pageData.current_page++;
+            if(that.sendWs.readyState==1){
+                // that.sendWs.send(JSON.stringify({
+                //   action: 'pagingResult',
+                //   params: {
+                //     username:that.username,
+                //     meeting_number:that.meetNum,
+                //     page: that.pageData.current_page,
+                //     limit: that.rows,
+                //     order:1
+                //   }
+                // }))
+            }
+          }
+        }
+    },
+    openWebSocket: function(url) { // 转写socke
       var that = this
       this.result = ''
       if ('WebSocket' in window) {
-        this.wenetWs = new WebSocket(that.WebSocket_url) // 初步转写
-        // this.openSendSocket();
+        this.wenetWs = new WebSocket(url) // 初步转写
         this.wenetWs.onopen = function() {
           console.log('Websocket 连接成功，开始识别')
           that.wenetWs.send(
@@ -192,7 +312,7 @@ export default {
               action: 'InitStreamingASR',
               devid: 'test_202004211132',
               scene: 'tongyong',
-              token: that.token_val,
+              token: this.token_val,
               codec: 'pcm',
               sample_rate: 16000,
               meeting_id: 'test02_68_20200421185308'
@@ -217,6 +337,21 @@ export default {
         }
       }
     },
+    reconnect() {//重新连接
+        var that = this;
+        if(that.lockReconnect) {
+            return;
+        };
+        that.lockReconnect = true;
+        //没连接上会一直重连，设置延迟避免请求过多
+        that.timeoutnum && clearTimeout(that.timeoutnum);
+        that.timeoutnum = setTimeout(function () {
+            //新连接
+            // alert('正在重连')
+            that.openSendSocket();
+            that.lockReconnect = false;
+        },500);
+    },
     transform: function(results, flag) { // 格式处理
       const newobj = {}
       const temp = {}
@@ -225,6 +360,9 @@ export default {
       temp.meeting_number = this.meetNum// 传入会议号
       temp.username = this.username // 传入当前登录人
       temp.type = flag // 传入当前登录人
+      // temp.limit = this.rows //请求条数
+      // temp.order = 1;
+      // temp.page = 1
       newobj.params = temp
       return newobj
     },
@@ -234,10 +372,18 @@ export default {
       if (obj.code == 200) {
         obj.results = obj.results == undefined ? '' : obj.results
         if (obj.results != '' && obj.results != undefined) {
-          if (this.sendWs.readyState == 1 && obj.is_final != 1) { // 临时结果
-            const data = that.transform(obj.results, 0)
-            this.sendWs.send(JSON.stringify(data)) // 发送临时转写结果
+          if (this.sendWs.readyState == 1 && obj.is_final != 1&&this.sendFlag) { // 临时结果
+            this.i--
+            if (this.i == 0) {
+              this.i = 6
+            // that.serverTimeoutObj=setTimeout(()=>{
+              const data = that.transform(obj.results, 0)
+              console.log('*-*-*-*-*-*-*-*-*-*-*-*-*-99999999*-*-*-*-*-*-*-*-*-*-')
+              this.sendWs.send(JSON.stringify(data)) // 发送临时转写结果
+            // },500)
+            }
             this.update() // 更新语音记录数据
+
           } else if (this.sendWs.readyState == 3) {
             // this.openSendSocket()
           }
@@ -250,7 +396,8 @@ export default {
               this.sendWs.send(JSON.stringify(data)) // 发送转写结果
               this.update() // 更新语音记录数据
             } else if (this.sendWs.readyState == 3) {
-              // this.openSendSocket()
+              // alert('连接异常')
+              // that.reconnect()
             }
             this.to_footer()
           } else {
@@ -262,13 +409,31 @@ export default {
       }
     },
     update: function() {
-      const that = this;
-      // this.chatHight = document.querySelector('.chat-main').offsetHeight;
+      const that = this
       this.sendWs.onmessage = function(_msg) {
+        that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
+        console.log(that.recordContent)
+        /**
+         * 
+         * that.recordContent.push(JSON.parse(_msg.data).data) // 记录数据更新
+            that.pageData = JSON.parse(_msg.data).data.page
+         */
+        that.recordContent = JSON.parse(_msg.data).data
+
         // 接收语音记录
-        if (JSON.parse(_msg.data).identification == 'results') {
-          that.recordContent = JSON.parse(_msg.data).data // 记录数据更新
-        }
+        // if (JSON.parse(_msg.data).identification == 'historicalData'||JSON.parse(_msg.data).identification == 'results') {
+        //   if(JSON.parse(_msg.data).data.data){
+
+        //     that.recordContent = JSON.parse(_msg.data).data.data.reverse() // 记录数据更新
+        //     that.pageData = JSON.parse(_msg.data).data.page
+        //   }
+        // }else if(JSON.parse(_msg.data).identification == 'pagingResult'){
+        //   let arr =JSON.parse(_msg.data).data.data.reverse()
+        //   arr.push(...that.recordContent)
+        //   that.recordContent=arr
+        //   that.pageData = JSON.parse(_msg.data).data.page
+
+        // }
       }
       that.to_footer()
     },
@@ -299,7 +464,7 @@ export default {
             audio_data: Base64_test
           })
           if (that.wenetWs.readyState === 3) {
-            that.openWebSocket()
+            that.openWebSocket(that.WebSocket_url)
           } else if (that.wenetWs.readyState === 1) {
             that.wenetWs.send(text)
           }
@@ -310,7 +475,7 @@ export default {
 
     startRecording: function() {
       // Check socket url
-      // var socketUrl = this.WebSocket_url
+      var socketUrl = this.WebSocket_url
       // init recorder
       SoundRecognizer.init({
         soundType: 'wav',
@@ -318,7 +483,7 @@ export default {
         // recwaveElm: '.recwave',
         translerCallBack: this.TransferUpload
       })
-      this.openWebSocket()
+      this.openWebSocket(socketUrl)
     },
 
     stopRecording: function() {
@@ -333,13 +498,11 @@ export default {
 
     to_footer: function() {
       this.$nextTick(() => {
-          var container = this.$el.querySelector(".chat-content");
-          // var container_bottom = this.$el.querySelector(".results_bottom");
-          container.scrollTop = container.scrollHeight;
-          // container_bottom.scrollTop = container_bottom.scrollHeight;
-        });
-      // var div = document.querySelector('.chat-content')
-      // div.scrollTop = div.scrollHeight
+        var container = this.$el.querySelector('.chat-content>.recordItem:last-child')
+        if(container){
+          container.scrollIntoView()
+        }
+      })
     }
   }
 }
@@ -349,12 +512,18 @@ export default {
 <style scoped>
 .chat-main{
   width: 100%;
-  /* height: 100px; */
+  height: 100%;
   overflow-y: auto;
 }
 .chat-content {
   height: 100%;
   padding-top: 20px;
+}
+
+.btn{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .word {
   display: flex;
@@ -473,5 +642,43 @@ img {
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
   background-color: #c8c8c8;
+}
+.box{
+    position:fixed;
+    right:10px;
+    bottom: 10px;
+    height:30px;
+    width: 50px;    
+    text-align:center;
+    padding:10px 5px;    
+    background-color: lightblue;
+    border-radius: 20%;
+    overflow: hidden;
+}
+.box:hover:before{
+    top:50%
+}
+.box:hover .box-in{
+    visibility: hidden;
+}
+.box:before{
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    content:'新消息';
+    width: 40px;
+    color:rgb(252, 217, 152);
+    font-weight:bold;
+
+}    
+.box-in{
+    visibility: visible;
+    display:inline-block;
+    height:20px;
+    width: 20px;
+    border: 3px solid black;
+    border-color: white transparent transparent white;
+    transform:rotate(225deg);
 }
 </style>
