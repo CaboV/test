@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module.exports = {
   publicPath: './'
   // devServer: {
@@ -14,3 +15,15 @@ module.exports = {
   //   },
   // },
 }
+=======
+'use strict'
+const path = require('path')
+
+module.exports = {
+
+  publicPath: '/chat',
+  outputDir: 'dist',
+  assetsDir: 'static',
+
+}
+>>>>>>> 3eb8794809e99d2d831f6d4d5362696cf6fbd2a1
