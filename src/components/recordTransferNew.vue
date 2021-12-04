@@ -115,7 +115,7 @@ export default {
   data() {
     return {
       i:5,
-      meetNum: '22211', // 当前会议号
+      meetNum: '77777', // 当前会议号
       username:'23',
       oldScrollTop: 0,
       wenetWs: null, // RTC
@@ -136,10 +136,11 @@ export default {
       }],
       recordContent: [],
       pageData:{
-        current_page: 4,//当前
-        next_page: 4,//下一页
-        previous_page: 3,//上一页
-        total: 4,//总条数
+        current_page: 1,//当前
+        // next_page: 2,//下一页
+        // previous_page: 0,//上一页
+        last_page:1,
+        total: 1,//总条数
       },
       rows:20,
       sendFlag:false,
@@ -150,7 +151,7 @@ export default {
       timeoutnum: null,//断开 重连倒计时
       mycontent:{},
       othercpntent:{},
-
+      history_url:'http://192.168.0.79:8095/voip-yy-api/meeting/pageData',
 
 
 
@@ -158,9 +159,9 @@ export default {
       WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
-      // sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
-      chatData:{meeting_id:'22211'}
+      //sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
+      sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
+      chatData:{meeting_id:'77777'}
     }
   },
   mounted() {
@@ -176,26 +177,44 @@ export default {
     }
   },
   methods: {
+    getHistory(){
+      this.axios
+        .post(this.history_url, {
+        limit: this.rows,
+        page:this.pageData.current_page,
+        meeting_number: this.meetNum
+      }).then(res => {
+        if(res.data.code==200){
+          this.recordContent = res.data.data.data
+          that.pageData.total = res.data.data.total
+          that.pageData.last_page = res.data.data.last_page
+          that.pageData.current_page = res.data.data.current_page
+        }
+        // that.meetNum = res.meeting_number
+      }).catch((err) => {
+        console.log(err)
+      })
+    },
     getMeetNum() {
-      var rand = ''
-      for (var i = 0; i < 8; i++) {
-        rand += Math.floor(Math.random() * 10)
-      }
+      // var rand = ''
+      // for (var i = 0; i < 8; i++) {
+      //   rand += Math.floor(Math.random() * 10)
+      // }
       // if (!this.chatData.meeting_id || this.chatData.meeting_id == '') {
       //   this.$message.warning('开始失败,请重新开始转写')
       //   return
       // }
       const that = this
-      this.axios
-        .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
-        meeting_name: 'testmeeting',
-        meeting_number: this.chatData.meeting_id
-      }).then(res => {
-        that.meetNum = res.meeting_number
-      }).catch((err) => {
-        console.log(err)
-      })
-
+      // this.axios
+      //   .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
+      //   meeting_name: 'testmeeting',
+      //   meeting_number: this.meetNum
+      // }).then(res => {
+      //   // that.meetNum = res.meeting_number
+      // }).catch((err) => {
+      //   console.log(err)
+      // })
+      this.getHistory()
       that.startRecording()// 开始实时传输音频
       that.openSendSocket()
       that.to_footer()
@@ -294,8 +313,9 @@ export default {
       let that =this
         if (e.srcElement.scrollTop  == 0 ) {
           console.log(that.pageData.current_page<that.pageData.total,that.pageData.current_page,that.pageData.total)
-          if(that.pageData.current_page<that.pageData.total){
+          if(that.pageData.current_page<that.pageData.last_page){
             that.pageData.current_page++;
+            this.getHistory()
             if(that.sendWs.readyState==1){
                 // that.sendWs.send(JSON.stringify({
                 //   action: 'pagingResult',
