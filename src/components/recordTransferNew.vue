@@ -177,24 +177,24 @@ export default {
   },
   methods: {
     getMeetNum() {
-      var rand = ''
-      for (var i = 0; i < 8; i++) {
-        rand += Math.floor(Math.random() * 10)
-      }
+      // var rand = ''
+      // for (var i = 0; i < 8; i++) {
+      //   rand += Math.floor(Math.random() * 10)
+      // }
       // if (!this.chatData.meeting_id || this.chatData.meeting_id == '') {
       //   this.$message.warning('开始失败,请重新开始转写')
       //   return
       // }
       const that = this
-      this.axios
-        .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
-        meeting_name: 'testmeeting',
-        meeting_number: this.meetNum
-      }).then(res => {
-        that.meetNum = res.meeting_number
-      }).catch((err) => {
-        console.log(err)
-      })
+      // this.axios
+      //   .post("https://voiptest.raisound.com/ting_v3/v3/auth/createMeeting", {
+      //   meeting_name: 'testmeeting',
+      //   meeting_number: this.meetNum
+      // }).then(res => {
+      //   // that.meetNum = res.meeting_number
+      // }).catch((err) => {
+      //   console.log(err)
+      // })
 
       that.startRecording()// 开始实时传输音频
       that.openSendSocket()
