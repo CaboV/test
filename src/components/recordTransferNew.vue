@@ -139,7 +139,7 @@ export default {
         current_page: 1,//当前
         // next_page: 2,//下一页
         // previous_page: 0,//上一页
-        last_page:1,
+        last_page:2,
         total: 1,//总条数
       },
       rows:20,
@@ -151,8 +151,8 @@ export default {
       timeoutnum: null,//断开 重连倒计时
       mycontent:{},
       othercpntent:{},
-      history_url:'http://192.168.0.79:8095/voip-yy-api/meeting/pageData',
-
+      // history_url:'http://192.168.0.79:8095/voip-yy-api/meeting/pageData',//https://voiptest.raisound.com/meeting/meeting/createMeeting
+      history_url:'https://voiptest.raisound.com/meeting/meeting/pageData',
 
 
       // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
@@ -185,10 +185,13 @@ export default {
         meeting_number: this.meetNum
       }).then(res => {
         if(res.data.code==200){
-          this.recordContent = res.data.data.data
-          that.pageData.total = res.data.data.total
-          that.pageData.last_page = res.data.data.last_page
-          that.pageData.current_page = res.data.data.current_page
+          if(res.data.data.data&&res.data.data.data.length>0){
+            this.recordContent = res.data.data.data
+            this.pageData.total = res.data.data.total
+            this.pageData.last_page = res.data.data.last_page
+            this.pageData.current_page = res.data.data.current_page
+          }
+          
         }
         // that.meetNum = res.meeting_number
       }).catch((err) => {
