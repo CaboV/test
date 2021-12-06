@@ -152,7 +152,7 @@ export default {
       mycontent:{},
       othercpntent:{},
       // history_url:'http://192.168.0.79:8095/voip-yy-api/meeting/pageData',//https://voiptest.raisound.com/meeting/meeting/createMeeting
-      history_url:'https://voiptest.raisound.com/meeting/meeting/pageData',
+      history_url:'https://voiptest.raisound.com/meeting/pageData',
 
 
       // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
