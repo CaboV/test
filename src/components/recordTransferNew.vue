@@ -1,6 +1,13 @@
 <template>
   <div class="chat-main" style="height:280px;padding-top:2px">
         <button size="mini" type="primary" @click="getMeetNum()">开始转写</button>
+        <span :title="!openFalg?'开始转写':'暂停转写'" :style="{'background-color':'#ddd',display:'block',width:'20px',
+          height:'18px',border:'1px sold #ccc',padding:'3px',
+          'border-radius':'13px','line-height':'24px','text-again':center}">
+          <span :style="{'background-color':openFalg?'#f11':'#0c0',display:'inline-block',width:'16px',
+          height:'16px',border:'1px sold #ccc',
+          'border-radius':'8px',margin:0}"></span>
+        </span>
     <div class="chat-content"  @scroll="scrollEvent" style="display:block;height:220px;padding-top:2px">
       <!-- 
       <span v-for="(itemc, indexc) in recordContent" :key="indexc" class="recordItem">
@@ -70,11 +77,11 @@
     <br style="clear:both;"/>
     <div style="background-color:#fff;margin-top:60px">
           <span class="word_temp">
-            <span class="img" style="background-color:rgb(99,179,187);height:30px;width:30px" v-text="othercpntent.username=(othercpntent&&othercpntent!=null)?othercpntent.username:'其他'">
-              {{ othercpntent.username }}
+            <span class="img" style="background-color:rgb(99,179,187);height:30px;width:30px" v-text="(othercontent&&othercontent!=null)?othercontent.username:'其他'">
+              {{ othercontent.username }}
             </span>
             <!-- <span class="info"> -->
-              <span class="info-content" v-text="othercpntent.content=(othercpntent&&othercpntent!=null)?othercpntent.content:'其他'">{{ othercpntent.content }}</span>
+              <span class="info-content" v-text="(othercontent&&othercontent!=null)?othercontent.content:'其他'">{{ othercontent.content }}</span>
             <!-- </span> -->
           </span>
           <span class="word_temp">
@@ -150,10 +157,10 @@ export default {
       lockReconnect:false,
       timeoutnum: null,//断开 重连倒计时
       mycontent:{},
-      othercpntent:{},
+      othercontent:{},
       // history_url:'http://192.168.0.79:8095/voip-yy-api/meeting/pageData',//https://voiptest.raisound.com/meeting/meeting/createMeeting
-      history_url:'https://voiptest.raisound.com/meeting/pageData',
-
+      history_url:'https://voiptest.raisound.com/meeting/meeting/pageData',
+      openFalg:false,
 
       // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
       WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
@@ -186,19 +193,18 @@ export default {
       }).then(res => {
         if(res.data.code==200){
           if(res.data.data.data&&res.data.data.data.length>0){
-            this.recordContent = res.data.data.data
+            this.recordContent.unshift(...res.data.data.data)
             this.pageData.total = res.data.data.total
             this.pageData.last_page = res.data.data.last_page
             this.pageData.current_page = res.data.data.current_page
           }
-          
         }
-        // that.meetNum = res.meeting_number
       }).catch((err) => {
         console.log(err)
       })
     },
     getMeetNum() {
+      this.openFalg=true
       // var rand = ''
       // for (var i = 0; i < 8; i++) {
       //   rand += Math.floor(Math.random() * 10)
@@ -460,7 +466,7 @@ export default {
           if(that.username==JSON.parse(_msg.data).data.username){
             that.mycontent = JSON.parse(_msg.data).data
           }else{
-            that.othercpntent= JSON.parse(_msg.data).data
+            that.othercontent= JSON.parse(_msg.data).data
           }
         }
         // 接收语音记录

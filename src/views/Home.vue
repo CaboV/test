@@ -1,27 +1,8 @@
 <template>
   <div class="home" :style="{height:Height}">
-    111
-    <!-- <div class="chat-content" :style="{height:380+'px',display:'inline-block','overflow-y':'scroll'}">
     
-    <span v-for="(itemc, indexc) in recordContent" :key="indexc">
-      <span class="word" v-if="itemc.name!='忽忽'">
-        <img :src="itemc.headUrl" />
-        <span class="info">
-          <p class="time">{{ itemc.name }} {{ itemc.timestamp }}</p>
-          <span class="info-content">{{ itemc.content }}</span>
-        </span>
-      </span>
-      <span class="word-my" v-else>
-        <span class="info">
-          <p class="time">{{ itemc.name }} {{ itemc.timestamp }}</p>
-          <span class="info-content">{{ itemc.content }}</span>
-        </span>
-        <img :src="itemc.headUrl" />
-      </span>
-    </span>
-    
-  </div> -->
-    <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
+     <button @click='trackSetQueryDeviceList()'>重新获取音频设备</button>
+    <select name="trackSet_device" class="trackSet_device" id=""></select>
     <button @click="begin()">开始会议</button>
     <RecordTransfer  />
     <!-- <hello-world></hello-world> -->
@@ -41,8 +22,9 @@ export default {
   },
   data(){
     return{
-    meetNum:'',
-    Height:window.innerHeight
+      meetNum:'',
+      Height:window.innerHeight,
+      DeviceList:[],
     }
   },
   
@@ -65,7 +47,35 @@ export default {
             alert("获取token失败!");
           }
           return false;
-        });}
+        });
+    },
+    devicesFun(){
+      api.getAvailableDevices().then(devices => {
+        console.log("音频设备",devices)
+      })
+    },
+    trackSetQueryDeviceList(){
+      var end=function(list,err){
+        DeviceList=list;
+        
+        var opts=['<option value="">'+(list.length?'不设置':err)+'</option>'];
+        for(var i=0;i<list.length;i++){
+          var o=list[i];
+          if(o.deviceId && o.kind=="audioinput"){
+            var name=o.label||((i+1)+"# 无名称，可能是因为从来没有打开过录音");
+            opts.push('<option value="'+i+'">'+name+'</option>');
+          }
+        }
+        document.querySelector(".trackSet_device").innerHTML=opts.join(" ")
+      };
+      if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices){
+        navigator.mediaDevices.enumerateDevices().then(end)["catch"](function(e){
+          end([],"拉取失败："+e.message);
+        });
+      }else{
+        end([],"此浏览器不支持拉取设备列表");
+      }
+    },
   }
 }
 </script>
