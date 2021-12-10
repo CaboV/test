@@ -3,7 +3,6 @@
     
      <button @click='trackSetQueryDeviceList()'>重新获取音频设备</button>
     <select name="trackSet_device" class="trackSet_device" id=""></select>
-    <button @click="begin()">开始会议</button>
     <RecordTransfer  />
     <!-- <hello-world></hello-world> -->
   </div>
@@ -27,37 +26,20 @@ export default {
       DeviceList:[],
     }
   },
-  
+  created(){
+    this.trackSetQueryDeviceList()
+  },
   methods:{
-    begin(){
-      var rand = ''
-      for (var i = 0; i < 8; i++) {
-        rand += Math.floor(Math.random() * 10)
-      }
-      this.axios
-        .post("http://192.168.0.79:8095/voip-yy-api/meeting/createMeeting", {
-          meeting_name: 'testmeeting',
-          meeting_number: Number(rand)
-        })
-        .then((stu) => {
-          if (obj.code == 200) {
-            //正常登录
-            this.meetNum = obj.data.token;
-          } else {
-            alert("获取token失败!");
-          }
-          return false;
-        });
-    },
     devicesFun(){
       api.getAvailableDevices().then(devices => {
         console.log("音频设备",devices)
       })
     },
     trackSetQueryDeviceList(){
+      let that = this
+
       var end=function(list,err){
-        DeviceList=list;
-        
+        that.DeviceList=list;
         var opts=['<option value="">'+(list.length?'不设置':err)+'</option>'];
         for(var i=0;i<list.length;i++){
           var o=list[i];
