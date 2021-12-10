@@ -166,7 +166,7 @@ export default {
       WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
-      //sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
+      // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
       sendSocket_url: "wss://voiptest.raisound.com/meeting_wss",//获取语音转写记录
       chatData:{meeting_id:'77777'}
     }
