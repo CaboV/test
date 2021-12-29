@@ -60,7 +60,6 @@
   </div>
 </template>
 <script>
-import JitsiMeetExternalAPI from "@/assets/js/jitsi";
 import SoundRecognizer from "@/assets/js/SoundRecognizer";
 import Recorder from "@/assets/js/recorder/recorder-core";
 import wav from "@/assets/js/recorder/engine/wav";

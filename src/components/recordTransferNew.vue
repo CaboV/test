@@ -1,9 +1,14 @@
 <template>
   <div class="chat-main" style="height:280px;padding-top:2px">
         <button size="mini" type="primary" @click="getMeetNum()">开始转写</button>
+        <div style="text-align:center;height:20px;width:100%;
+                                        border:0px solid #bcbcbc;color:#000;box-sizing: border-box;display:inline-block"
+              class="recwave">
+
+        </div>
         <span :title="!openFalg?'开始转写':'暂停转写'" :style="{'background-color':'#ddd',display:'block',width:'20px',
           height:'18px',border:'1px sold #ccc',padding:'3px',
-          'border-radius':'13px','line-height':'24px','text-again':center}">
+          'border-radius':'13px','line-height':'24px'}">
           <span :style="{'background-color':openFalg?'#f11':'#0c0',display:'inline-block',width:'16px',
           height:'16px',border:'1px sold #ccc',
           'border-radius':'8px',margin:0}"></span>
@@ -107,12 +112,19 @@
 <script>
 // eslint-disable-next-line no-unused-vars
 import JitsiMeetExternalAPI from '@/assets/js/jitsi'
+
 import SoundRecognizer from '@/assets/js/SoundRecognizer'
+
 // eslint-disable-next-line no-unused-vars
 import Recorder from '@/assets/js/recorder/recorder-core'
 // eslint-disable-next-line no-unused-vars
+// import wavesurfer from '@/assets/js/wavesurfer.view'
+// import waveview from '@/assets/js/waveview'
 import wav from '@/assets/js/recorder/engine/wav'
 // import { createMeeting_api, getKey_api } from '@/api/recordTransfer'
+import FrequencyHistogramView from '../assets/js/recorder/frequency.histogram.view'
+// import FrequencyHistogramView from '../assets/js/recorder/lib.fft'
+
 
 export default {
   name: 'RecordTransfer',
@@ -162,8 +174,9 @@ export default {
       history_url:'https://voiptest.raisound.com/meeting/meeting/pageData',
       openFalg:false,
 
+      WebSocket_url: 'ws://192.168.0.50:4900/recognize',
       // WebSocket_url: "wss://ting.raisound.com:9443/recognize",//转写
-      WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
+      // WebSocket_url: "wss://voiptest.raisound.com/recognize_wss",//转写
       // WebSocket_url: "wss://192.168.0.50:19999/recognize",//转写
       // sendSocket_url: "ws://1.14.48.90:8484/",//获取语音转写记录
       // sendSocket_url: "ws://192.168.0.79:8484/",//获取语音转写记录
@@ -352,7 +365,8 @@ export default {
               action: 'InitStreamingASR',
               devid: 'test_202004211132',
               scene: 'tongyong',
-              token: this.token_val,
+              // token: this.token_val,
+              token: '',
               codec: 'pcm',
               sample_rate: 16000,
               meeting_id: 'test02_68_20200421185308'
@@ -529,7 +543,7 @@ export default {
       SoundRecognizer.init({
         soundType: 'wav',
         sampleRate: 16000,
-        // recwaveElm: '.recwave',
+        recwaveElm: '.recwave',
         translerCallBack: this.TransferUpload
       })
       this.openWebSocket(socketUrl)
@@ -569,11 +583,11 @@ export default {
   overflow-y: auto;
 }
 
-.btn{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+/* .btn{ */
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center; */
+/* } */
 .word {
   display: flex;
   text-align: left;

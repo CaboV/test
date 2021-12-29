@@ -115,6 +115,12 @@ var SoundRecognizer = {
         });
 
         rec.open(function () {
+            that.wave = Recorder.FrequencyHistogramView({
+                elem: that.recwaveElm, lineCount: 90
+                , position: 0
+                , minHeight: 1
+                , stripeEnable: false
+            });
             rec.start();
             that.isCloseRecorder = false;
             that.RealTimeSendTryReset(that.soundType);//重置

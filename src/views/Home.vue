@@ -1,22 +1,28 @@
 <template>
   <div class="home" :style="{height:Height}">
     
-     <button @click='trackSetQueryDeviceList()'>重新获取音频设备</button>
-    <select name="trackSet_device" class="trackSet_device" id=""></select>
-    <RecordTransfer  />
+     <!-- <button @click='trackSetQueryDeviceList()'>重新获取音频设备</button> -->
+    <!-- <select name="trackSet_device" class="trackSet_device" id=""></select> -->
+    <!-- <RecordTransfer  /> -->
+    <test />
+    <transfer-word />
     <!-- <hello-world></hello-world> -->
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import RecordTransfer from '@/components/recordTransferNew.vue'
+// import RecordTransfer from '@/components/recordTransferNew.vue'
+import Test from '../components/test.vue'
+import TransferWord from '../components/transferWord.vue'
 // import HelloWorld from '../components/HelloWorld.vue'
 
 export default {
   name: 'Home',
   components: {
-    RecordTransfer,
+    // RecordTransfer
+    Test,
+    TransferWord,
     // HelloWorld
   },
   data(){
@@ -64,8 +70,8 @@ export default {
 <style scoped>
 .home{
   /* height: calc(100%); */
-  display: flex;
-  flex-wrap: wrap;
+  /* display: flex; */
+  /* flex-wrap: wrap; */
 }
 .chat-content {
 }
