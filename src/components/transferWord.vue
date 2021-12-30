@@ -107,7 +107,7 @@ export default {
   border: 1px solid ; */
 }
 .voice-container{
-    width:75%;
+    width:100%;
     padding: 10px 0 0 0;
 }
 .start-voice {

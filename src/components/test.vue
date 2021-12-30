@@ -17,7 +17,7 @@
                                 </el-row> -->
                                 <el-row class="topic-information">
                                     <!-- <el-col :span="5">答题时间：{{publishTime}}</el-col> -->
-                                    <el-col :span="4">答题人：{{authorName}}</el-col>
+                                    <el-col :span="8">答题人：{{username}}</el-col>
                                 </el-row>
                             </el-col>
                         </el-row>
@@ -378,7 +378,7 @@
     }
     .exercise-center{
             background-color: #FFFFFF;
-            height: 320px;
+            height: 270px;
             margin-top: 16px;
             padding-top: 22px;
             /*题目信息*/
@@ -399,7 +399,7 @@
     }
     /*题目内容*/
     .radio-type{
-        height: 184px;
+        height: 145px;
         border-top: solid 1px #e6e6e6;
         padding: 15px 40px;
         
